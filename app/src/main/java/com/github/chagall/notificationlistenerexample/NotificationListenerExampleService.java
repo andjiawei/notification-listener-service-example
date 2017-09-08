@@ -1,9 +1,15 @@
 package com.github.chagall.notificationlistenerexample;
 
+import android.annotation.TargetApi;
+import android.app.Notification;
 import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
+import android.widget.Toast;
 
 /**
  * MIT License
@@ -53,37 +59,61 @@ public class NotificationListenerExampleService extends NotificationListenerServ
         return super.onBind(intent);
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void onNotificationPosted(StatusBarNotification sbn){
-        int notificationCode = matchNotificationCode(sbn);
-
-        if(notificationCode != InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE){
-            Intent intent = new  Intent("com.github.chagall.notificationlistenerexample");
-            intent.putExtra("Notification Code", notificationCode);
-            sendBroadcast(intent);
-        }
+        Log.e("111", "onNotificationPosted: 接受回掉");
+        Bundle extras = sbn.getNotification().extras;
+        // 获取接收消息APP的包名
+        String notificationPkg = sbn.getPackageName();
+        // 获取接收消息的抬头
+        String notificationTitle = extras.getString(Notification.EXTRA_TITLE);
+        // 获取接收消息的内容
+        String notificationText = extras.getString(Notification.EXTRA_TEXT);
+        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
+//        VToast.show("抬头:"+notificationTitle+"内容："+notificationText);
+        sendToEmail(notificationPkg,notificationText);
     }
 
-    @Override
-    public void onNotificationRemoved(StatusBarNotification sbn){
-        int notificationCode = matchNotificationCode(sbn);
+    private void sendToEmail(final String notificationPkg, final String notificationText) {
 
-        if(notificationCode != InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Log.e("111", "run: "+UserManager.getInstance().email+UserManager.getInstance().password);
+                    //当你从github上下载下来代码后，你需要在这里设置自己的邮箱和密码，这样才能发送信息
+                    //此处的密码是163开通第三方服务的授权码，在设置选项卡的pop3 smtp这些打开后，设置的
+                    GMailSender sender = new GMailSender(UserManager.getInstance().email, UserManager.getInstance().password);
+                    //设置你的邮箱和接收者的邮箱，我这里填写的是个例子
+                    sender.sendMail("This is Subject",
+                            "This is Body:消息的抬头"+notificationPkg+"消息的内容:"+notificationText,
+                            UserManager.getInstance().email,
+                            UserManager.getInstance().receiver);
 
-            StatusBarNotification[] activeNotifications = this.getActiveNotifications();
-
-            if(activeNotifications != null && activeNotifications.length > 0) {
-                for (int i = 0; i < activeNotifications.length; i++) {
-                    if (notificationCode == matchNotificationCode(activeNotifications[i])) {
-                        Intent intent = new  Intent("com.github.chagall.notificationlistenerexample");
-                        intent.putExtra("Notification Code", notificationCode);
-                        sendBroadcast(intent);
-                        break;
-                    }
+                } catch (Exception e) {
+                    Log.e("SendMail", e.getMessage(), e);
                 }
             }
-        }
+        }).start();
+
     }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn){
+
+        // TODO Auto-generated method stub
+        Bundle extras = sbn.getNotification().extras;
+        // 获取接收消息APP的包名
+        String notificationPkg = sbn.getPackageName();
+        // 获取接收消息的抬头
+        String notificationTitle = extras.getString(Notification.EXTRA_TITLE);
+        // 获取接收消息的内容
+        String notificationText = extras.getString(Notification.EXTRA_TEXT);
+        Log.i("XSL_Test", "Notification removed " + notificationTitle + " & " + notificationText);
+
+        }
 
     private int matchNotificationCode(StatusBarNotification sbn) {
         String packageName = sbn.getPackageName();

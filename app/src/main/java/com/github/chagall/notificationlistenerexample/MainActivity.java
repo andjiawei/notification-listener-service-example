@@ -11,7 +11,10 @@ import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.ImageView;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * MIT License
@@ -37,26 +40,87 @@ public class MainActivity extends AppCompatActivity {
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
 
-    private ImageView interceptedNotificationImageView;
+    private Context context=this;
+
     private ImageChangeBroadcastReceiver imageChangeBroadcastReceiver;
     private AlertDialog enableNotificationListenerAlertDialog;
+    private EditText et_email;
+    private EditText et_password;
+    private EditText et_receiver;
+    private UserManager userManager;
+
+
+    public static void showToast(String message){
+//        Toast.makeText(MainActivity.this,message,Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        userManager = UserManager.getInstance();
+        VToast.init(this);
 
-        // Here we get a reference to the image we will modify when a notification is received
-        interceptedNotificationImageView
-                = (ImageView) this.findViewById(R.id.intercepted_notification_logo);
+        et_email = (EditText) findViewById(R.id.email);
+        et_password = (EditText) findViewById(R.id.password);
+        et_receiver = (EditText) findViewById(R.id.receiver);
+
+        // 通知栏监控器开关
+        Button notificationMonitorOnBtn = (Button)findViewById(R.id.notification_monitor_on_btn);
+        notificationMonitorOnBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //
+                if (!isNotificationServiceEnabled()) {
+                    startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "监控器开关已打开", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+
+        Button notificationMonitorOffBtn = (Button)findViewById(R.id.notification_monitor_off_btn);
+        notificationMonitorOffBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //
+                if (isNotificationServiceEnabled()) {
+                    startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"));
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(), "监控器开关已关闭", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+
+        findViewById(R.id.sure).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String email=et_email.getText().toString();
+                String password=et_password.getText().toString();
+                String receiver=et_receiver.getText().toString();
+
+                if(TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(receiver)){
+                    Toast.makeText(MainActivity.this,"请补全信息",Toast.LENGTH_SHORT).show();
+                }else{
+                    userManager.email=email;
+                    userManager.password=password;
+                    userManager.receiver=receiver;
+                }
+            }
+        });
+
+
 
         // If the user did not turn the notification listener service on we prompt him to do so
-        if(!isNotificationServiceEnabled()){
-            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-            enableNotificationListenerAlertDialog.show();
-        }
+//        if(!isNotificationServiceEnabled()){
+//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+//            enableNotificationListenerAlertDialog.show();
+//        }else{
+//        }
 
-        // Finally we register a receiver to tell the MainActivity when a notification has been received
+        // Finally we register a et_receiver to tell the MainActivity when a notification has been received
         imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.github.chagall.notificationlistenerexample");
@@ -67,28 +131,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(imageChangeBroadcastReceiver);
-    }
-
-    /**
-     * Change Intercepted Notification Image
-     * Changes the MainActivity image based on which notification was intercepted
-     * @param notificationCode The intercepted notification code
-     */
-    private void changeInterceptedNotificationImage(int notificationCode){
-        switch(notificationCode){
-            case NotificationListenerExampleService.InterceptedNotificationCode.FACEBOOK_CODE:
-                interceptedNotificationImageView.setImageResource(R.drawable.facebook_logo);
-                break;
-            case NotificationListenerExampleService.InterceptedNotificationCode.INSTAGRAM_CODE:
-                interceptedNotificationImageView.setImageResource(R.drawable.instagram_logo);
-                break;
-            case NotificationListenerExampleService.InterceptedNotificationCode.WHATSAPP_CODE:
-                interceptedNotificationImageView.setImageResource(R.drawable.whatsapp_logo);
-                break;
-            case NotificationListenerExampleService.InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE:
-                interceptedNotificationImageView.setImageResource(R.drawable.other_notification_logo);
-                break;
-        }
     }
 
     /**
@@ -125,7 +167,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int receivedNotificationCode = intent.getIntExtra("Notification Code",-1);
-            changeInterceptedNotificationImage(receivedNotificationCode);
         }
     }
 
