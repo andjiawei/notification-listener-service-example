@@ -9,7 +9,6 @@ public class UserManager {
     private static UserManager userManager;
     
     private UserManager(){
-        
     }
 
     public static synchronized UserManager getInstance(){
@@ -23,4 +22,5 @@ public class UserManager {
     public String email;
     public String password;
     public String receiver;
+    public boolean isAllow=false;//是否允许发送
 }

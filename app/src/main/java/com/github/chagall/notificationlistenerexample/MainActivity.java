@@ -61,6 +61,27 @@ public class MainActivity extends AppCompatActivity {
         userManager = UserManager.getInstance();
         VToast.init(this);
 
+        Intent intent=new Intent(this,KeepLiveService.class);
+        startService(intent);
+
+        initView();
+        getSpData();
+
+        // If the user did not turn the notification listener service on we prompt him to do so
+//        if(!isNotificationServiceEnabled()){
+//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+//            enableNotificationListenerAlertDialog.show();
+//        }else{
+//        }
+
+        // Finally we register a et_receiver to tell the MainActivity when a notification has been received
+        imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.github.chagall.notificationlistenerexample");
+        registerReceiver(imageChangeBroadcastReceiver,intentFilter);
+    }
+
+    private void initView() {
         et_email = (EditText) findViewById(R.id.email);
         et_password = (EditText) findViewById(R.id.password);
         et_receiver = (EditText) findViewById(R.id.receiver);
@@ -107,24 +128,35 @@ public class MainActivity extends AppCompatActivity {
                     userManager.email=email;
                     userManager.password=password;
                     userManager.receiver=receiver;
+                    userManager.isAllow=true;
+
+                    PrefsAccessor.getInstance(MainActivity.this).saveString("email",email);
+                    PrefsAccessor.getInstance(MainActivity.this).saveString("password",password);
+                    PrefsAccessor.getInstance(MainActivity.this).saveString("receiver",receiver);
+
+                    Toast.makeText(MainActivity.this,"设置成功",Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
+    }
 
+    private void getSpData() {
+        String email = PrefsAccessor.getInstance(MainActivity.this).getString("email");
+        String password = PrefsAccessor.getInstance(MainActivity.this).getString("password");
+        String receiver = PrefsAccessor.getInstance(MainActivity.this).getString("receiver");
 
-        // If the user did not turn the notification listener service on we prompt him to do so
-//        if(!isNotificationServiceEnabled()){
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
-//        }else{
-//        }
+        if(!TextUtils.isEmpty(email)){
+            et_email.setText(email);
+        }
 
-        // Finally we register a et_receiver to tell the MainActivity when a notification has been received
-        imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.github.chagall.notificationlistenerexample");
-        registerReceiver(imageChangeBroadcastReceiver,intentFilter);
+        if(!TextUtils.isEmpty(password)){
+            et_password.setText(password);
+        }
+
+        if(!TextUtils.isEmpty(receiver)){
+            et_receiver.setText(receiver);
+        }
     }
 
     @Override

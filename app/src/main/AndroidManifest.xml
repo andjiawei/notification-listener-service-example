@@ -18,13 +18,18 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".NotificationListenerExampleService"
+        <service
+            android:name=".NotificationListenerExampleService"
             android:label="@string/service_label"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <service
+            android:name=".KeepLiveService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>
