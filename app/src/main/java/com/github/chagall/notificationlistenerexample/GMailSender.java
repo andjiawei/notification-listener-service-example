@@ -66,8 +66,8 @@ public class GMailSender extends javax.mail.Authenticator {
         try {
             MimeMessage message = new MimeMessage(session);
             DataHandler handler = new DataHandler(new ByteArrayDataSource(body.getBytes(), "text/plain"));
-//            message.setSender(new InternetAddress(sender));//这个可以
-            message.setFrom(new InternetAddress(sender));//这个也可以代替上句
+            message.setSender(new InternetAddress(sender));//这个可以
+//            message.setFrom(new InternetAddress(sender));//这个也可以代替上句
             message.setSubject(subject);
             message.setDataHandler(handler);
             if (recipients.indexOf(',') > 0)

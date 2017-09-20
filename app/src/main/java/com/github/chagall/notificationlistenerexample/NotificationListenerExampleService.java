@@ -32,6 +32,9 @@ import android.widget.Toast;
  */
 public class NotificationListenerExampleService extends NotificationListenerService {
 
+
+    StringBuffer sb=new StringBuffer();
+
     /*
         These are the package names of the apps. for which we want to
         listen the notifications
@@ -66,12 +69,33 @@ public class NotificationListenerExampleService extends NotificationListenerServ
         Bundle extras = sbn.getNotification().extras;
         // 获取接收消息APP的包名
         String notificationPkg = sbn.getPackageName();
-        //不包含360的推送 并且当前允许
+        //过滤微信
         Log.e("包名", "onNotificationPosted: "+notificationPkg );
-        if(notificationPkg.contains("qihoo") || !UserManager.getInstance().isAllow  ){
-            Log.e("222", "拦截此次消息" );
+
+        if( UserManager.getInstance().isAllow ){
+            if(UserManager.getInstance().isWechat){
+                if(notificationPkg.contains("com.tencent.mm") ){
+                    Log.e("接受微信消息", "接受微信消息 " );
+                }else{
+                    Log.e("拦截非微信的消息", "拦截此次消息" );
+                    return;
+                }
+            }else{
+                Log.e("接受所有消息", "接受所有消息" );
+            }
+//            if(is60sAfter()){
+//                Log.e("60", "60s后发送拼接的消息+邮件");
+//            }else{
+//                //拼接消息
+//                sb.append();
+//
+//            }
+
+        }else{
+            Log.e("不允许推送", "不允许推送" );
             return;
         }
+
         // 获取接收消息的抬头
         String notificationTitle = extras.getString(Notification.EXTRA_TITLE);
         // 获取接收消息的内容
@@ -91,7 +115,7 @@ public class NotificationListenerExampleService extends NotificationListenerServ
                     //此处的密码是163开通第三方服务的授权码，在设置选项卡的pop3 smtp这些打开后，设置的
                     GMailSender sender = new GMailSender(UserManager.getInstance().email, UserManager.getInstance().password);
                     //设置你的邮箱和接收者的邮箱，我这里填写的是个例子
-                    sender.sendMail("app通知栏",
+                    sender.sendMail(notificationText,
                             "标题: "+notificationTitle+"     内容: "+notificationText+"      来自: "+notificationPkg,
                             UserManager.getInstance().email,
                             UserManager.getInstance().receiver);

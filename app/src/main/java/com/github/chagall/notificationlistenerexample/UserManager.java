@@ -23,4 +23,5 @@ public class UserManager {
     public String password;
     public String receiver;
     public boolean isAllow=false;//是否允许发送
+    public boolean isWechat=true;//默认只接受微信消息
 }

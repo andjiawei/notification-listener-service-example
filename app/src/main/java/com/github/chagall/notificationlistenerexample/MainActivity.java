@@ -10,9 +10,13 @@ import android.content.IntentFilter;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText et_password;
     private EditText et_receiver;
     private UserManager userManager;
-
+    private AppCompatCheckBox weChatCheckBox;
 
     public static void showToast(String message){
 //        Toast.makeText(MainActivity.this,message,Toast.LENGTH_SHORT).show();
@@ -85,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         et_email = (EditText) findViewById(R.id.email);
         et_password = (EditText) findViewById(R.id.password);
         et_receiver = (EditText) findViewById(R.id.receiver);
+        weChatCheckBox= (AppCompatCheckBox) findViewById(R.id.cb_wechat);
 
         // 通知栏监控器开关
         Button notificationMonitorOnBtn = (Button)findViewById(R.id.notification_monitor_on_btn);
@@ -135,6 +140,19 @@ public class MainActivity extends AppCompatActivity {
                     PrefsAccessor.getInstance(MainActivity.this).saveString("receiver",receiver);
 
                     Toast.makeText(MainActivity.this,"设置成功",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        weChatCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    Toast.makeText(MainActivity.this,"只接受微信消息",Toast.LENGTH_SHORT).show();
+                    userManager.isWechat=true;
+                }else{
+                    Toast.makeText(MainActivity.this,"接受所有消息",Toast.LENGTH_SHORT).show();
+                    userManager.isWechat=false;
                 }
             }
         });

@@ -57,11 +57,33 @@
             android:textColor="@color/black"
             />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="5dp"
+                android:src="@mipmap/wechat"
+                />
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/cb_wechat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:layout_marginLeft="10dp"
+                />
+        </LinearLayout>
+
+
+
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/sure"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="确定修改 开启接收"
+            android:text="确定内容 开启接收"
             />
 
     </LinearLayout>
