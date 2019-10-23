@@ -5,4 +5,6 @@
     <color name="colorAccent">#311b92</color>
     <color name="black">#000000</color>
     <color name="white">#ffffff</color>
+    <color name="chinese_skill_blue">#4d8fd5</color>
+    <color name="chinese_skill_blue_deeper">#047B87</color>
 </resources>

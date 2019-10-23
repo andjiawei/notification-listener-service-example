@@ -77,7 +77,7 @@ public class GMailSender extends javax.mail.Authenticator {
 //            message.saveChanges();//这句话有没有也没啥关系
             Transport.send(message);
         } catch (Exception e) {
-            VToast.show("密码错误或为开通相关服务");
+            VToast.show("密码错误或未开通相关服务");
             e.printStackTrace();
         }
     }

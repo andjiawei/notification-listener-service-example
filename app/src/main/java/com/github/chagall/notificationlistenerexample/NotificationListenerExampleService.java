@@ -5,23 +5,31 @@ import android.app.Notification;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
+
+import java.io.File;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * MIT License
- *
- *  Copyright (c) 2016 Fábio Alves Martins Pereira (Chagall)
- *
+ * <p>
+ * Copyright (c) 2016 Fábio Alves Martins Pereira (Chagall)
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -32,13 +40,33 @@ import android.widget.Toast;
  */
 public class NotificationListenerExampleService extends NotificationListenerService {
 
+    long time=0;
 
-    StringBuffer sb=new StringBuffer();
+    StringBuffer sb = new StringBuffer();
+    StringBuffer samesb = new StringBuffer();
+    UserManager userManager=UserManager.getInstance();
+    private Handler handler=new Handler(){
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(sb.length()>0){
+                if(UserManager.getInstance().isAllow){
+                     sendToEmail("", sb.toString(), "");
+
+                }
+//                if(UserManager.getInstance().isText){
+//                    saveLocalMessage(sb.toString());
+//                }
+            }
+        }
+    };
+
 
     /*
-        These are the package names of the apps. for which we want to
-        listen the notifications
-     */
+            These are the package names of the apps. for which we want to
+            listen the notifications
+         */
     private static final class ApplicationPackageNames {
         public static final String FACEBOOK_PACK_NAME = "com.facebook.katana";
         public static final String FACEBOOK_MESSENGER_PACK_NAME = "com.facebook.orca";
@@ -64,48 +92,144 @@ public class NotificationListenerExampleService extends NotificationListenerServ
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
-    public void onNotificationPosted(StatusBarNotification sbn){
-        Log.e("111", "onNotificationPosted: 接受回掉");
+    public void onNotificationPosted(StatusBarNotification sbn) {
+
         Bundle extras = sbn.getNotification().extras;
         // 获取接收消息APP的包名
         String notificationPkg = sbn.getPackageName();
-        //过滤微信
-        Log.e("包名", "onNotificationPosted: "+notificationPkg );
-
-        if( UserManager.getInstance().isAllow ){
-            if(UserManager.getInstance().isWechat){
-                if(notificationPkg.contains("com.tencent.mm") ){
-                    Log.e("接受微信消息", "接受微信消息 " );
-                }else{
-                    Log.e("拦截非微信的消息", "拦截此次消息" );
-                    return;
-                }
-            }else{
-                Log.e("接受所有消息", "接受所有消息" );
-            }
-//            if(is60sAfter()){
-//                Log.e("60", "60s后发送拼接的消息+邮件");
-//            }else{
-//                //拼接消息
-//                sb.append();
-//
-//            }
-
-        }else{
-            Log.e("不允许推送", "不允许推送" );
-            return;
-        }
-
         // 获取接收消息的抬头
         String notificationTitle = extras.getString(Notification.EXTRA_TITLE);
         // 获取接收消息的内容
         String notificationText = extras.getString(Notification.EXTRA_TEXT);
-        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
-//        VToast.show("抬头:"+notificationTitle+"内容："+notificationText);
-        sendToEmail(notificationTitle,notificationText,notificationPkg);
+//        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
+
+
+
+        if(TextUtils.isEmpty(notificationText) || TextUtils.isEmpty(notificationTitle)){
+            return;
+        }
+
+        if("null".equalsIgnoreCase(notificationText) || "null".equalsIgnoreCase(notificationTitle)){
+            return;
+        }
+
+        if(notificationTitle.contains("小米")){
+            Log.e("小米手环", "拦截小米手环消息 "+notificationTitle);
+            return;
+        }
+
+        String replace = userManager.applist.replace("，", ",");
+        String[] split = replace.split(",");
+        for (int i = 0; i <split.length ; i++) {
+            if(notificationTitle.contains(split[i]) && !TextUtils.isEmpty(split[i])){
+                Log.e("applist", "收到"+ notificationTitle+"的无效通知");
+                return;
+            }
+        }
+
+        //过滤连续相同的通知
+        if(samesb.toString().equals(notificationTitle+notificationText)){
+            Log.e("same", "拦截重复消息");
+            return;
+        }
+        samesb.setLength(0);
+        samesb.append(notificationTitle);
+        samesb.append(notificationText);
+
+
+//        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
+        //过滤微信
+//        int indexof = notificationText.indexOf("条]");
+//        if (indexof !=-1) {
+//
+//            notificationText = notificationText.substring(indexof+2);
+//            Log.e("条数[]", notificationText );
+//        }else{
+//            notificationText=notificationTitle+":"+notificationText;
+//            Log.e("条数", notificationText );
+//        }
+//        Log.e("包名", "onNotificationPosted: " + notificationPkg);
+//        if(!TextUtils.isEmpty(notificationText) && notificationTitle.contains("触摸即可了解详情")){
+//            return;
+//        }
+
+
+
+//        Log.e("未拦截", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
+
+            if (UserManager.getInstance().isWechat) {
+                if (notificationPkg.contains("com.tencent.mm")) {
+                    Log.e("接受微信消息", "接受微信消息 ");
+                    saveLocalMessage(notificationTitle+"&&"+notificationText);
+                } else {
+                    Log.e("拦截非微信的消息", "拦截此次消息");
+//                    return;
+                }
+            } else {
+                Log.e("接受所有消息", "接受所有消息");
+            }
+
+            if((System.currentTimeMillis()-time)>10*1000){
+                time=System.currentTimeMillis();
+                sb.append(notificationText);
+                Log.e("将要发送的消息", sb.toString());
+                if (UserManager.getInstance().isAllow) {
+
+                    sendToEmail(notificationTitle, sb.toString(), notificationPkg);
+//                    sb.setLength(0);
+                    //保存本地数据
+                }else {
+                    Log.e("不允许推送", "不允许发送邮件");
+//                    return;
+                }
+//
+//                if (UserManager.getInstance().isText){
+//                    saveLocalMessage( sb.toString());
+////                    sb.setLength(0);
+//                }else {
+//                    Log.e("不允许推送", "不能保存为文件");
+////                    return;
+//                }
+
+            }else{
+                handler.removeCallbacksAndMessages(null);
+                handler.sendEmptyMessageDelayed(100,10*1000);
+                sb.append(notificationText);
+                sb.append(System.getProperty("line.separator"));
+            }
+
+//        String newMsg= sb.toString();
+
+        NetUtils.startSend(notificationTitle+"&&"+notificationText,notificationPkg);
+        sb.setLength(0);
+
+
+
+
+//      sendToEmail(notificationTitle,notificationText,notificationPkg);
     }
 
-    private void sendToEmail(final String notificationTitle, final String notificationText, final String notificationPkg) {
+    private void saveLocalMessage(String message) {
+        Log.e("时间111","message:"+message+"time:"+getNowDate());
+//        Log.e("时间222",time);
+//        FileUtils.saveFile(message,"aaa.txt");
+        String nowDate = getNowDate();
+        FileUtils.mCreatFile(message,nowDate);
+//        NetUtils.startSend(message,nowDate);
+
+    }
+
+    private String getNowDate() {
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM-dd HH:mm:ss");// HH:mm:ss
+//获取当前时间
+        Date date = new Date(System.currentTimeMillis());
+
+
+        return  simpleDateFormat.format(date);
+    }
+
+    private void sendToEmail(String notificationTitle, final String text, final String packageName) {
 
         new Thread(new Runnable() {
             @Override
@@ -115,8 +239,8 @@ public class NotificationListenerExampleService extends NotificationListenerServ
                     //此处的密码是163开通第三方服务的授权码，在设置选项卡的pop3 smtp这些打开后，设置的
                     GMailSender sender = new GMailSender(UserManager.getInstance().email, UserManager.getInstance().password);
                     //设置你的邮箱和接收者的邮箱，我这里填写的是个例子
-                    sender.sendMail(notificationText,
-                            "标题: "+notificationTitle+"     内容: "+notificationText+"      来自: "+notificationPkg,
+                    sender.sendMail(text,
+                            text,
                             UserManager.getInstance().email,
                             UserManager.getInstance().receiver);
 
@@ -130,7 +254,7 @@ public class NotificationListenerExampleService extends NotificationListenerServ
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
-    public void onNotificationRemoved(StatusBarNotification sbn){
+    public void onNotificationRemoved(StatusBarNotification sbn) {
 
         // TODO Auto-generated method stub
         Bundle extras = sbn.getNotification().extras;
@@ -142,23 +266,35 @@ public class NotificationListenerExampleService extends NotificationListenerServ
         String notificationText = extras.getString(Notification.EXTRA_TEXT);
         Log.i("XSL_Test", "Notification removed " + notificationTitle + " & " + notificationText);
 
-        }
+    }
 
     private int matchNotificationCode(StatusBarNotification sbn) {
         String packageName = sbn.getPackageName();
 
-        if(packageName.equals(ApplicationPackageNames.FACEBOOK_PACK_NAME)
-                || packageName.equals(ApplicationPackageNames.FACEBOOK_MESSENGER_PACK_NAME)){
-            return(InterceptedNotificationCode.FACEBOOK_CODE);
+        if (packageName.equals(ApplicationPackageNames.FACEBOOK_PACK_NAME)
+                || packageName.equals(ApplicationPackageNames.FACEBOOK_MESSENGER_PACK_NAME)) {
+            return (InterceptedNotificationCode.FACEBOOK_CODE);
+        } else if (packageName.equals(ApplicationPackageNames.INSTAGRAM_PACK_NAME)) {
+            return (InterceptedNotificationCode.INSTAGRAM_CODE);
+        } else if (packageName.equals(ApplicationPackageNames.WHATSAPP_PACK_NAME)) {
+            return (InterceptedNotificationCode.WHATSAPP_CODE);
+        } else {
+            return (InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE);
         }
-        else if(packageName.equals(ApplicationPackageNames.INSTAGRAM_PACK_NAME)){
-            return(InterceptedNotificationCode.INSTAGRAM_CODE);
+    }
+
+    @Override
+    public void onDestroy() {
+        if(!TextUtils.isEmpty(sb.toString())){
+
+            if(UserManager.getInstance().isAllow){
+                sendToEmail("", sb.toString(), "");
+            }
+//            if(UserManager.getInstance().isText){
+//                saveLocalMessage(sb.toString());
+//            }
+
         }
-        else if(packageName.equals(ApplicationPackageNames.WHATSAPP_PACK_NAME)){
-            return(InterceptedNotificationCode.WHATSAPP_CODE);
-        }
-        else{
-            return(InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE);
-        }
+        super.onDestroy();
     }
 }

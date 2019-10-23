@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">NotificationListenerExample</string>
+    <string name="app_name">Notification</string>
     <string name="service_label">NotificationListenerExampleService</string>
     <string name="image_change_explanaton">The Image bellow will change when a Notification is intercepted</string>
 
