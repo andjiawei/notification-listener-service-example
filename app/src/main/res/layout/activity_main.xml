@@ -86,53 +86,124 @@
                 />
         </LinearLayout>
 
-
-
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/sure"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button1"
-            android:padding="5dp"
-            android:layout_margin="5dip"
-            android:textColor="@color/white"
-            android:text="邮件模式"
-            />
+            android:layout_height="wrap_content">
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/sure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button1"
+                android:padding="5dp"
+                android:layout_margin="5dip"
+                android:textColor="@color/white"
+                android:text="邮件模式"
+                />
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/save"
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:background="@drawable/button1"
+                android:gravity="center"
+                android:layout_margin="5dip"
+                android:padding="5dp"
+                android:textColor="@color/white"
+                android:text="文本模式"
+                />
+
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/clear"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="清空数据"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="wrap_content">
 
-            android:background="@drawable/button1"
-            android:gravity="center"
-            android:layout_margin="5dip"
-            android:padding="5dp"
-            android:textColor="@color/white"
-            android:text="文本模式"
-            />
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/voice_play"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="播放语音"
+                />
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/clear"
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/voice_pause"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="停止语音"
+                />
+
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/voicer_henan"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="河南老乡"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:background="@drawable/button1"
-            android:textColor="@color/white"
-            android:text="清空数据"
-            />
+            android:layout_height="wrap_content">
 
-        <android.support.v7.widget.AppCompatButton
-            android:id="@+id/voice_play"
-            android:layout_width="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:background="@drawable/button1"
-            android:textColor="@color/white"
-            android:text="播放语音"
-            />
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/vx_voice"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:checked="true"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="自动播放"
+                />
+
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/voicer_normal"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="普通女声"
+                />
+
+            <android.support.v7.widget.AppCompatButton
+                android:id="@+id/voicer_child"
+                android:layout_width="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@drawable/button1"
+                android:textColor="@color/white"
+                android:text="天真童声"
+                />
+        </LinearLayout>
+
 
     </LinearLayout>
 

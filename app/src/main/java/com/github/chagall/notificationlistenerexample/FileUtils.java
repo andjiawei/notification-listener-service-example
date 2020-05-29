@@ -65,11 +65,11 @@ public class FileUtils {
      *
      * @return
      */
-    public static String getFile() {
+    public static String getFile(String fileName) {
         try {
             // 创建文件
             String path = Environment.getExternalStoragePublicDirectory("") + "/00localMessage/";
-            String fileName = "applist.txt";
+//            String fileName = "applist.txt";
             File file = new File(path,fileName);
 
             if(!file.exists()) {
@@ -100,7 +100,7 @@ public class FileUtils {
             return new String(data);
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
 
     }

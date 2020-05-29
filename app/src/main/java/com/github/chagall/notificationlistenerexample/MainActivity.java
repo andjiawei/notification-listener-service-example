@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
 import android.provider.SyncStateContract;
@@ -18,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -33,8 +35,10 @@ import android.widget.Toast;
 
 import com.iflytek.cloud.ErrorCode;
 import com.iflytek.cloud.InitListener;
+import com.iflytek.cloud.SpeechConstant;
 import com.iflytek.cloud.SpeechError;
 import com.iflytek.cloud.SpeechSynthesizer;
+import com.iflytek.cloud.SpeechUtility;
 import com.iflytek.cloud.SynthesizerListener;
 
 /**
@@ -71,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     private UserManager userManager;
     private AppCompatCheckBox weChatCheckBox;
 
+
     public static void showToast(String message){
 //        Toast.makeText(MainActivity.this,message,Toast.LENGTH_SHORT).show();
     }
@@ -84,29 +89,24 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent=new Intent(this,KeepLiveService.class);
         startService(intent);
-
+        requestPermissions();
         initView();
         getSpData();
 
-        // If the user did not turn the notification listener service on we prompt him to do so
-//        if(!isNotificationServiceEnabled()){
-//            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
-//            enableNotificationListenerAlertDialog.show();
-//        }else{
-//        }
 
-        // Finally we register a et_receiver to tell the MainActivity when a notification has been received
         imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.github.chagall.notificationlistenerexample");
         registerReceiver(imageChangeBroadcastReceiver,intentFilter);
         saveStore();//请求存储权限
-       String applist= FileUtils.getFile();
+        String applist= FileUtils.getFile("applist.txt");
+
         userManager.applist=applist;
         Log.e("applist","本地文件："+applist);
 //        NetUtils.startSend("15939163333","9503944cecfc4e63bbdc3adfd01acc62");
-         mTts = SpeechSynthesizer.createSynthesizer(MainActivity.this, mTtsInitListener);
-        Log.e("mTts",mTts.toString());
+        mscInit("5922b4ad");
+        mTts = SpeechSynthesizer.createSynthesizer(MainActivity.this, mTtsInitListener);
+        userManager.xunfei = mTts;
     }
 
     /**
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("科大讯飞", "InitListener init() code = " + code);
             if (code != ErrorCode.SUCCESS) {
 //                showTip("初始化失败,错误码："+code+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
-                Toast.makeText(getApplicationContext(), "\"初始化失败,错误码：\"+code+\",请点击网址https://www.xfyun.cn/document/error-code查询解决方案\"", Toast.LENGTH_SHORT);
+                Toast.makeText(getApplicationContext(), "init错误"+code, Toast.LENGTH_SHORT);
             } else {
                 // 初始化成功，之后可以调用startSpeaking方法
                 // 注：有的开发者在onCreate方法中创建完合成对象之后马上就调用startSpeaking进行合成，
@@ -126,6 +126,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    private void mscInit (String serverUrl){
+        SpeechUtility.createUtility(MainActivity.this, "appid=" + serverUrl);
+    }
 
     private void initView() {
         et_email = (EditText) findViewById(R.id.email);
@@ -214,25 +218,71 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 showSureDialog();
 
-//               boolean flag= FileUtils.deletefile();
-//                if (flag){
-//                    VToast.show("删除成功");
-//                }else{
-//                    VToast.show("删除失败");
-//                }
-//                Toast.makeText(MainActivity.this,"清空文本",Toast.LENGTH_SHORT).show();
-
             }
         });
 
         findViewById(R.id.voice_play).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               String text="测试的语音消息哈哈哈哈哈啊";
-                int code = mTts.startSpeaking(text, mTtsListener);
+               String msg= FileUtils.getFile("wechatMsg.txt");
+                Log.e("语音","消息:"+msg);
+                if(TextUtils.isEmpty(msg)){
+                    msg="空消息";
+                }
+                int code = mTts.startSpeaking( msg.replaceAll("\\d+",""), mTtsListener);
                 if (code != ErrorCode.SUCCESS) {
                     VToast.show("语音合成失败,错误码: " + code+",请点击网址https://www.xfyun.cn/document/error-code查询解决方案");
                 }
+
+            }
+        });
+
+        findViewById(R.id.voice_pause).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                 mTts.stopSpeaking();
+            }
+        });
+
+
+        findViewById(R.id.voicer_henan).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTts.setParameter(SpeechConstant.VOICE_NAME, "xiaokun");
+            }
+        });
+        //微信实时播放开关
+        final AppCompatButton button= (AppCompatButton) findViewById(R.id.vx_voice);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UserManager.getInstance().isPlay=! UserManager.getInstance().isPlay;
+                if(UserManager.getInstance().isPlay){
+                    button.setBackground( getResources().getDrawable(R.drawable.check_border));
+                }else{
+                    button.setBackground( getResources().getDrawable(R.drawable.btn_bg_red));
+                }
+            }
+        });
+        findViewById(R.id.voicer_normal).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                UserManager.getInstance().isPlay=! UserManager.getInstance().isPlay;
+            }
+        });
+
+        findViewById(R.id.voicer_normal).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTts.setParameter(SpeechConstant.VOICE_NAME, "xiaoyan");
+
+            }
+        });
+
+        findViewById(R.id.voicer_child).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTts.setParameter(SpeechConstant.VOICE_NAME, "nannan");
 
             }
         });
@@ -446,7 +496,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void requestPermissions(){
+        try {
+            if (Build.VERSION.SDK_INT >= 23) {
+                int permission = ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                if(permission!= PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,new String[]
+                            {Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                    Manifest.permission.LOCATION_HARDWARE,Manifest.permission.READ_PHONE_STATE,
+                                    Manifest.permission.WRITE_SETTINGS,Manifest.permission.READ_EXTERNAL_STORAGE,
+                                    Manifest.permission.RECORD_AUDIO,Manifest.permission.READ_CONTACTS},0x0010);
+                }
 
+                if(permission != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(this,new String[] {
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION},0x0010);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 }

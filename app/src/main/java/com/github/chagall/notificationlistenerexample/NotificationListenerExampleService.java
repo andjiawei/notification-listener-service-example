@@ -40,19 +40,19 @@ import java.util.Date;
  */
 public class NotificationListenerExampleService extends NotificationListenerService {
 
-    long time=0;
+    long time = 0;
 
     StringBuffer sb = new StringBuffer();
     StringBuffer samesb = new StringBuffer();
-    UserManager userManager=UserManager.getInstance();
-    private Handler handler=new Handler(){
+    UserManager userManager = UserManager.getInstance();
+    private Handler handler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if(sb.length()>0){
-                if(UserManager.getInstance().isAllow){
-                     sendToEmail("", sb.toString(), "");
+            if (sb.length() > 0) {
+                if (UserManager.getInstance().isAllow) {
+                    sendToEmail("", sb.toString(), "");
 
                 }
 //                if(UserManager.getInstance().isText){
@@ -104,31 +104,30 @@ public class NotificationListenerExampleService extends NotificationListenerServ
 //        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
 
 
-
-        if(TextUtils.isEmpty(notificationText) || TextUtils.isEmpty(notificationTitle)){
+        if (TextUtils.isEmpty(notificationText) || TextUtils.isEmpty(notificationTitle)) {
             return;
         }
 
-        if("null".equalsIgnoreCase(notificationText) || "null".equalsIgnoreCase(notificationTitle)){
+        if ("null".equalsIgnoreCase(notificationText) || "null".equalsIgnoreCase(notificationTitle)) {
             return;
         }
 
-        if(notificationTitle.contains("小米")){
-            Log.e("小米手环", "拦截小米手环消息 "+notificationTitle);
+        if (notificationTitle.contains("小米")) {
+            Log.e("小米手环", "拦截小米手环消息 " + notificationTitle);
             return;
         }
 
         String replace = userManager.applist.replace("，", ",");
         String[] split = replace.split(",");
-        for (int i = 0; i <split.length ; i++) {
-            if(notificationTitle.contains(split[i]) && !TextUtils.isEmpty(split[i])){
-                Log.e("applist", "收到"+ notificationTitle+"的无效通知");
+        for (int i = 0; i < split.length; i++) {
+            if (notificationTitle.contains(split[i]) && !TextUtils.isEmpty(split[i])) {
+                Log.e("applist", "收到" + notificationTitle + "的无效通知");
                 return;
             }
         }
 
         //过滤连续相同的通知
-        if(samesb.toString().equals(notificationTitle+notificationText)){
+        if (samesb.toString().equals(notificationTitle + notificationText)) {
             Log.e("same", "拦截重复消息");
             return;
         }
@@ -136,87 +135,62 @@ public class NotificationListenerExampleService extends NotificationListenerServ
         samesb.append(notificationTitle);
         samesb.append(notificationText);
 
-
-//        Log.e("XSL_Test", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
-        //过滤微信
-//        int indexof = notificationText.indexOf("条]");
-//        if (indexof !=-1) {
-//
-//            notificationText = notificationText.substring(indexof+2);
-//            Log.e("条数[]", notificationText );
-//        }else{
-//            notificationText=notificationTitle+":"+notificationText;
-//            Log.e("条数", notificationText );
-//        }
-//        Log.e("包名", "onNotificationPosted: " + notificationPkg);
-//        if(!TextUtils.isEmpty(notificationText) && notificationTitle.contains("触摸即可了解详情")){
-//            return;
-//        }
-
-
-
-//        Log.e("未拦截", "消息的抬头 " + notificationTitle + "接收消息的内容 " + notificationText);
-
-            if (UserManager.getInstance().isWechat) {
-                if (notificationPkg.contains("com.tencent.mm")) {
-                    Log.e("接受微信消息", "接受微信消息 ");
-                    saveLocalMessage(notificationTitle+"&&"+notificationText);
-                } else {
-                    Log.e("拦截非微信的消息", "拦截此次消息");
-//                    return;
+        if (UserManager.getInstance().isWechat) {
+            if (notificationPkg.contains("com.tencent.mm")) {
+                Log.e("接受微信消息", "接受微信消息 ");
+                if(UserManager.getInstance().isPlay){
+                    startSpeak(notificationTitle+","+notificationText);
                 }
+
+                saveLocalMessage(notificationTitle + "&&" + notificationText);
             } else {
-                Log.e("接受所有消息", "接受所有消息");
-            }
-
-            if((System.currentTimeMillis()-time)>10*1000){
-                time=System.currentTimeMillis();
-                sb.append(notificationText);
-                Log.e("将要发送的消息", sb.toString());
-                if (UserManager.getInstance().isAllow) {
-
-                    sendToEmail(notificationTitle, sb.toString(), notificationPkg);
-//                    sb.setLength(0);
-                    //保存本地数据
-                }else {
-                    Log.e("不允许推送", "不允许发送邮件");
+                Log.e("拦截非微信的消息", "拦截此次消息");
 //                    return;
-                }
-//
-//                if (UserManager.getInstance().isText){
-//                    saveLocalMessage( sb.toString());
-////                    sb.setLength(0);
-//                }else {
-//                    Log.e("不允许推送", "不能保存为文件");
-////                    return;
-//                }
+            }
+        } else {
+            Log.e("接受所有消息", "接受所有消息");
+        }
 
-            }else{
-                handler.removeCallbacksAndMessages(null);
-                handler.sendEmptyMessageDelayed(100,10*1000);
-                sb.append(notificationText);
-                sb.append(System.getProperty("line.separator"));
+        if ((System.currentTimeMillis() - time) > 10 * 1000) {
+            time = System.currentTimeMillis();
+            sb.append(notificationText);
+            Log.e("将要发送的消息", sb.toString());
+            if (UserManager.getInstance().isAllow) {
+                sendToEmail(notificationTitle, sb.toString(), notificationPkg);
+            } else {
+                Log.e("不允许推送", "不允许发送邮件");
             }
 
-//        String newMsg= sb.toString();
 
-        NetUtils.startSend(notificationTitle+"&&"+notificationText,notificationPkg);
+        } else {
+            handler.removeCallbacksAndMessages(null);
+            handler.sendEmptyMessageDelayed(100, 10 * 1000);
+            sb.append(notificationText);
+            sb.append(System.getProperty("line.separator"));
+        }
+
+
+        NetUtils.startSend(notificationTitle + "&&" + notificationText, notificationPkg);
         sb.setLength(0);
 
+    }
 
+    private void startSpeak(String s) {
+        if(TextUtils.isEmpty(s)){
+            UserManager.getInstance().xunfei.startSpeaking("空消息",null);
+        }else{
+            if(s.contains("条]")){
+                UserManager.getInstance().xunfei.startSpeaking(s.split("条]")[1],null);
+            }else{
+                UserManager.getInstance().xunfei.startSpeaking(s,null);
+            }
+        }
 
-
-//      sendToEmail(notificationTitle,notificationText,notificationPkg);
     }
 
     private void saveLocalMessage(String message) {
-        Log.e("时间111","message:"+message+"time:"+getNowDate());
-//        Log.e("时间222",time);
-//        FileUtils.saveFile(message,"aaa.txt");
         String nowDate = getNowDate();
-        FileUtils.mCreatFile(message,nowDate);
-//        NetUtils.startSend(message,nowDate);
-
+        FileUtils.mCreatFile(message, nowDate);
     }
 
     private String getNowDate() {
@@ -226,7 +200,7 @@ public class NotificationListenerExampleService extends NotificationListenerServ
         Date date = new Date(System.currentTimeMillis());
 
 
-        return  simpleDateFormat.format(date);
+        return simpleDateFormat.format(date);
     }
 
     private void sendToEmail(String notificationTitle, final String text, final String packageName) {
@@ -285,9 +259,9 @@ public class NotificationListenerExampleService extends NotificationListenerServ
 
     @Override
     public void onDestroy() {
-        if(!TextUtils.isEmpty(sb.toString())){
+        if (!TextUtils.isEmpty(sb.toString())) {
 
-            if(UserManager.getInstance().isAllow){
+            if (UserManager.getInstance().isAllow) {
                 sendToEmail("", sb.toString(), "");
             }
 //            if(UserManager.getInstance().isText){
